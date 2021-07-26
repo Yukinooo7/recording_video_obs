@@ -1,21 +1,15 @@
 import obspython
 import time
-# import subtitle_process
 
 html_path = ""
 video_path = ""
 scene_name = "Recording Scene"
-# duration = 0
+is_stopped = True
 
 
 def script_load(setting):
     global s_dic
-    # global time
-
-    # time = 0
     obspython.script_log(obspython.LOG_INFO, "Script Load successfully")
-    # sentence = subtitle_process.read_subtitle()
-    # s_dic = subtitle_process.get_time_content(sentence)
 
 
 def script_description():
@@ -24,11 +18,6 @@ def script_description():
 
 def script_properties():
     props = obspython.obs_properties_create()
-    # obspython.obs_properties_add_text(
-    #     props, "subtitle_file", "Subtitle file name", obspython.OBS_TEXT_DEFAULT)
-    # obspython.obs_properties_add_int(props, "interval", "1-60s", 1, 60, 1)
-    # text_source = obspython.obs_properties_add_list(
-    #     props, "source_name", "Source", obspython.OBS_COMBO_TYPE_LIST, obspython.OBS_COMBO_FORMAT_STRING)
 
     obspython.obs_properties_add_path(
         props, "html_path", "Subtitle File (HTML)", obspython.OBS_PATH_FILE, "HTML (*.html)", 'null')
@@ -47,16 +36,11 @@ def script_properties():
 
 def start_record(props, prop):
     global video_path
-    # global duration
 
-    # if not obspython.obs_frontend_recording_active():
-    # print(video_path)
     scenes_names = obspython.obs_frontend_get_scene_names()
 
     if scene_name not in scenes_names:
         new_scene = obspython.obs_scene_create(scene_name)
-
-    # print(new_scene)
 
     scenes = obspython.obs_frontend_get_scenes()
     for scene in scenes:
@@ -64,7 +48,6 @@ def start_record(props, prop):
         if name == scene_name:
             obspython.obs_frontend_set_current_scene(scene)
             new_scene = obspython.obs_scene_from_source(obspython.obs_frontend_get_current_scene())
-            # print("JUMP!")
     obspython.source_list_release(scenes)
 
     if scene_name not in scenes_names:
@@ -89,10 +72,8 @@ def start_record(props, prop):
         obspython.timer_add(stop_only, duration)
     else:
         if obspython.obs_frontend_recording_active():
-            # obspython.timer_remove(stop_only)
             refresh_source(props, prop)
         else:
-            # obspython.timer_remove(stop_only)
             refresh_source(props, prop)
 
             obspython.obs_frontend_recording_start()
@@ -101,22 +82,14 @@ def start_record(props, prop):
 
 
 def refresh_source(props, prop):
-    # global duration
-
-    # print(duration)
     obspython.timer_remove(stop_only)
     obspython.obs_frontend_recording_stop()
-    # obspython.remove_current_callback()
-    # time.sleep(1)
 
     video_source = obspython.obs_get_source_by_name("Record Video")
     duration = obspython.obs_source_media_get_duration(video_source)
     html_source = obspython.obs_get_source_by_name("Math Subtitle")
     video_data = obspython.obs_source_get_settings(video_source)
 
-    # print(obspython.obs_source_media_restart(video_source))
-    # print(video_data)
-    # obspython.obs_source_set_enabled(video_source, False)
     obspython.obs_source_set_enabled(html_source, False)
     obspython.obs_data_set_string(video_data, 'local_file', None)
     obspython.obs_source_update(video_source, video_data)
@@ -128,34 +101,20 @@ def refresh_source(props, prop):
     else:
         obspython.obs_data_set_int(html_data, "fps", fps - 1)
 
-    # obspython.obs_data_set_string(html_data, 'local_file', None)
-    # obspython.obs_data_set_bool(html_data, 'is_local_file', False)
-    # obspython.obs_source_update(html_source, html_data)
     time.sleep(1)
     obspython.obs_data_set_string(video_data, 'local_file', video_path)
     obspython.obs_source_update(video_source, video_data)
 
     obspython.obs_data_set_string(html_data, 'local_file', html_path)
-    # obspython.obs_data_set_bool(html_data, 'is_local_file', True)
     obspython.obs_source_update(html_source, html_data)
-    # obspython.obs_source_set_enabled(video_source, True)
     obspython.obs_source_set_enabled(html_source, True)
 
     obspython.obs_data_release(video_data)
     obspython.obs_data_release(html_data)
 
     obspython.timer_add(stop_only, duration)
-    # obspython.obs_frontend_recording_start()
-    # if not obspython.obs_frontend_recording_active():
-    #     obspython.obs_frontend_recording_start()
-    #     print("YEs")
-    # print(duration)
-    # if not obspython.obs_frontend_recording_active():
-    #     obspython.obs_frontend_recording_start()
-    # print(obspython.timer_add(stop_record, 1000))
 
-
-is_stopper = True
+is_stopped = True
 
 
 def start_recording():
@@ -191,44 +150,20 @@ def stop_record(props, prop):
     global html_path
 
     obspython.timer_remove(stop_only)
-    # if obspython.obs_frontend_recording_active():
     obspython.obs_frontend_recording_stop()
-
-    # print(obspython.obs_frontend_recording_active())
-    # print(html_path)
 
 
 def script_defaults(settings):
-    # set_locale()
     obspython.obs_data_set_default_string(settings, "source name", "None")
-
-    # obspython.obs_data_set_default_string(settings, "race_info", _("Race info"))
-    # obspython.obs_data_set_default_string(settings, "race", "None")
-    # obspython.obs_data_set_default_int(settings, "qualifier_cutoff", 3)
-    # obspython.obs_data_set_default_bool(settings, "timer_decimals", True)
-
-# def script_defaults(settings):
-#     obspython.obs_data_set_default_int(settings, "interval", 1)
 
 
 def script_update(setting):
-    # global interval
-    global source_name
-    # global s_dic
     global html_path
     global video_path
     # global interval_txt
 
     html_path = obspython.obs_data_get_string(setting, "html_path")
     video_path = obspython.obs_data_get_string(setting, "video_path")
-    # interval = obspython.obs_data_get_int(setting, "interval")
-
-    # obspython.timer_remove(update)
-    # obspython.timer_add(update_interval, interval*1000)
-
-    # obspython.timer_remove(update)
-    # obspython.timer_add(update, interval*1000)
-    # print(interval_txt)
 
 
 def script_description():
@@ -248,7 +183,6 @@ def fit_to_screen(scene_item):
     # OutputCY=700
     # 1680 x 1050 appear to be the dimensions we want, to completely fill the scren.
     video_info = obspython.obs_video_info()
-    # print(video_info)
     obspython.obs_get_video_info(video_info)
 
     bounds = obspython.vec2()
@@ -264,4 +198,3 @@ def fit_to_screen(scene_item):
     scale.x = 1
     scale.y = 1
     obspython.obs_sceneitem_set_scale(scene_item, scale)
-    # print("fit to screen")
